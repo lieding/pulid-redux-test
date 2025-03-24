@@ -6,6 +6,7 @@ import torch
 from nodes import NODE_CLASS_MAPPINGS
 from comfy import model_management
 from huggingface_hub import hf_hub_download
+from utils.extra_config import _load_extra_path_config
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
     """Returns the value at the given index of a sequence or mapping.
@@ -71,18 +72,23 @@ def add_extra_model_paths() -> None:
     """
     Parse the optional extra_model_paths.yaml file and add the parsed paths to the sys.path.
     """
+    err = False
     try:
         from main import load_extra_path_config
     except ImportError:
+        err = True
         print(
             "Could not import load_extra_path_config from main.py. Looking in utils.extra_config instead."
         )
-        from utils.extra_config import load_extra_path_config
+        
 
     extra_model_paths = find_path("extra_model_paths.yaml")
 
     if extra_model_paths is not None:
-        load_extra_path_config(extra_model_paths)
+        if err:
+            _load_extra_path_config(extra_model_paths)
+        else:
+            load_extra_path_config(extra_model_paths)
     else:
         print("Could not find the extra_model_paths config file.")
 
