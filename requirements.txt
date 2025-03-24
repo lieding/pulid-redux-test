@@ -2,6 +2,9 @@ pillow
 torchsde
 einops
 torch
+transformers>=4.28.1
+tokenizers>=0.13.3
+sentencepiece
 numpy
 safetensors>=0.4.2
 numpy==1.24.3
