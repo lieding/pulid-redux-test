@@ -355,6 +355,11 @@ class ApplyPulidFlux:
             logging.warning("PuLID warning: No faces detected in any of the given images, returning unmodified model.")
             del eva_clip, face_analysis, pulid_flux, face_helper, attn_mask
             return (model,)
+        
+        torch.save({
+            "embedding": cond,
+            "double_interval": pulid_flux.model.double_interval
+        }, "/home/featurize/work/pulid-redux-comfyui-deploy/patch_kwargs_fp8.pt")
 
         # average embeddings
         cond = torch.cat(cond).to(device, dtype=dtype)
@@ -371,10 +376,7 @@ class ApplyPulidFlux:
             "sigma_start": sigma_start,
             "sigma_end": sigma_end,
             "mask": attn_mask,
-            "double_interval": pulid_flux.model.double_interval
         }
-
-        torch.save(patch_kwargs, "/home/featurize/work/pulid-redux-comfyui-deploy/patch_kwargs_fp8.pt")
 
         ca_idx = 0
         for i in range(19):
@@ -388,7 +390,7 @@ class ApplyPulidFlux:
                 set_model_dit_patch_replace(model, patch_kwargs, ("single_block", i))
                 ca_idx += 1
 
-        if len(model.get_additional_models_with_key("pulid_flux_model_patcher")) == 0:
+        if "get_additional_models_with_key" in model and len(model.get_additional_models_with_key("pulid_flux_model_patcher")) == 0:
             print("草草草草草草草凹槽哦冲啊")
             model.set_additional_models("pulid_flux_model_patcher", [pulid_flux])
 
