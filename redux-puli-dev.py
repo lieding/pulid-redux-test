@@ -5,7 +5,7 @@ from typing import Sequence, Mapping, Any, Union
 import torch
 from comfy import model_management
 from extra_config import load_extra_path_config as _load_extra_path_config
-from nodes import NODE_CLASS_MAPPINGS, CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage
+from nodes import NODE_CLASS_MAPPINGS, CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage, VAELoader
 from comfy_extras.nodes_custom_sampler import BasicGuider, BasicScheduler, KSamplerSelect, Noise_RandomNoise, SamplerCustomAdvanced
 import node_helpers
 
@@ -129,7 +129,8 @@ def main():
     import_custom_nodes()
     with torch.inference_mode():
         loader = CheckpointLoaderSimple()
-        model, _ , vae = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
+        model = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
+        vaeload = VAELoader().load_vae("ae.sft")
 
         # redux_output = torch.load("female_1_redux_prompt.pt")
         dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
@@ -177,7 +178,7 @@ def main():
         vaedecode = VAEDecode()
         vaedecode_38 = vaedecode.decode(
             samples=get_value_at_index(samplercustomadvanced_10, 0),
-            vae=vae,
+            vae=get_value_at_index(vaeload, 0),
         )
 
         saveimage = SaveImage()
