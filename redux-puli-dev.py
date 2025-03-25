@@ -5,8 +5,10 @@ from typing import Sequence, Mapping, Any, Union
 import torch
 from nodes import NODE_CLASS_MAPPINGS
 from comfy import model_management
+from comfy.samplers import sampler_object
 from extra_config import load_extra_path_config as _load_extra_path_config
 from nodes import CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage
+import node_helpers
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
     """Returns the value at the given index of a sequence or mapping.
@@ -119,6 +121,13 @@ def import_custom_nodes() -> None:
     # Initializing custom nodes
     init_extra_nodes()
 
+def _flux_guidance(conditioning, guidance):
+    c = node_helpers.conditioning_set_values(conditioning, {"guidance": guidance})
+    return (c, )
+
+def ksamplerselect_get_sampler(sampler_name):
+    sampler = sampler_object(sampler_name)
+    return (sampler, )
 
 def main():
     
@@ -129,9 +138,7 @@ def main():
 
         redux_output = torch.load("female_1_redux_prompt.pt")
         
-
-        ksamplerselect = NODE_CLASS_MAPPINGS["KSamplerSelect"]()
-        ksamplerselect_35 = ksamplerselect.get_sampler(sampler_name="euler")
+        ksamplerselect_35 = ksamplerselect_get_sampler(sampler_name="euler")
 
         emptylatentimage = EmptyLatentImage()
         emptylatentimage_37 = emptylatentimage.generate(
@@ -142,8 +149,7 @@ def main():
         randomnoise = RandomNoise()
         randomnoise_13 = randomnoise.get_noise(noise_seed=random.randint(1, 2**64))
 
-        fluxguidance = NODE_CLASS_MAPPINGS["FluxGuidance"]()
-        fluxguidance_16 = fluxguidance.append(
+        fluxguidance_16 = _flux_guidance(
             guidance=3.5, conditioning=redux_output
         )
 
