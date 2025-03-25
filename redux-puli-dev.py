@@ -121,7 +121,7 @@ def import_custom_nodes() -> None:
 
 
 def main():
-    hf_hub_download(repo_id="Comfy-Org/flux1-dev", filename="flux1-dev.safetensors", local_dir="checkpoints/")
+    hf_hub_download(repo_id="Comfy-Org/flux1-dev", filename="flux1-dev-fp8.safetensors", local_dir="models/checkpoints/")
     
     import_custom_nodes()
     with torch.inference_mode():
