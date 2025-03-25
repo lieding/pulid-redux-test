@@ -873,7 +873,7 @@ class ModelPatcher:
         self.model_patches_to(self.offload_device)
         if unpatch_all:
             self.unpatch_model(self.offload_device, unpatch_weights=unpatch_all)
-        for callback in self.get_all_callbacks(CallbacksMP.ON_DETACH):
+        for callback in self.get_all_callbacks("on_detach_after"):
             callback(self, unpatch_all)
         return self.model
 
