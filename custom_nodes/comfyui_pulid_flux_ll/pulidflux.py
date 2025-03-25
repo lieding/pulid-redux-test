@@ -390,7 +390,7 @@ class ApplyPulidFlux:
                 set_model_dit_patch_replace(model, patch_kwargs, ("single_block", i))
                 ca_idx += 1
 
-        if "get_additional_models_with_key" in model and len(model.get_additional_models_with_key("pulid_flux_model_patcher")) == 0:
+        if len(model.get_additional_models_with_key("pulid_flux_model_patcher")) == 0:
             print("草草草草草草草凹槽哦冲啊")
             model.set_additional_models("pulid_flux_model_patcher", [pulid_flux])
 
