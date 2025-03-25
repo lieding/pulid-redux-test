@@ -6,6 +6,7 @@ import torch
 from nodes import NODE_CLASS_MAPPINGS
 from comfy import model_management
 from comfy.samplers import sampler_object
+from comfy.sample import prepare_noise
 from extra_config import load_extra_path_config as _load_extra_path_config
 from nodes import CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage
 import node_helpers
@@ -129,6 +130,15 @@ def ksamplerselect_get_sampler(sampler_name):
     sampler = sampler_object(sampler_name)
     return (sampler, )
 
+class Noise_RandomNoise:
+    def __init__(self, seed):
+        self.seed = seed
+
+    def generate_noise(self, input_latent):
+        latent_image = input_latent["samples"]
+        batch_inds = input_latent["batch_index"] if "batch_index" in input_latent else None
+        return prepare_noise(latent_image, self.seed, batch_inds)
+
 def main():
     
     import_custom_nodes()
@@ -145,9 +155,8 @@ def main():
             width=512, height=896, batch_size=1
         )
 
-        RandomNoise = NODE_CLASS_MAPPINGS["RandomNoise"]
-        randomnoise = RandomNoise()
-        randomnoise_13 = randomnoise.get_noise(noise_seed=random.randint(1, 2**64))
+       
+        randomnoise_13 = (Noise_RandomNoise(random.randint(1, 2**64)),)
 
         fluxguidance_16 = _flux_guidance(
             guidance=3.5, conditioning=redux_output
