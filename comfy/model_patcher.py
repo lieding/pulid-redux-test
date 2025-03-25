@@ -32,8 +32,43 @@ import comfy.model_management
 import comfy.lora
 import comfy.hooks
 import comfy.patcher_extension
-from comfy.patcher_extension import CallbacksMP, WrappersMP, PatcherInjection
 from comfy.comfy_types import UnetWrapperFunction
+
+class PatcherInjection:
+    def __init__(self, inject: Callable, eject: Callable):
+        self.inject = inject
+        self.eject = eject
+
+class CallbacksMP:
+    ON_CLONE = "on_clone"
+    ON_LOAD = "on_load_after"
+    ON_DETACH = "on_detach_after"
+    ON_CLEANUP = "on_cleanup"
+    ON_PRE_RUN = "on_pre_run"
+    ON_PREPARE_STATE = "on_prepare_state"
+    ON_APPLY_HOOKS = "on_apply_hooks"
+    ON_REGISTER_ALL_HOOK_PATCHES = "on_register_all_hook_patches"
+    ON_INJECT_MODEL = "on_inject_model"
+    ON_EJECT_MODEL = "on_eject_model"
+
+    # callbacks dict is in the format:
+    # {"call_type": {"key": [Callable1, Callable2, ...]} }
+    @classmethod
+    def init_callbacks(cls) -> dict[str, dict[str, list[Callable]]]:
+        return {}
+    
+class WrappersMP:
+    OUTER_SAMPLE = "outer_sample"
+    SAMPLER_SAMPLE = "sampler_sample"
+    CALC_COND_BATCH = "calc_cond_batch"
+    APPLY_MODEL = "apply_model"
+    DIFFUSION_MODEL = "diffusion_model"
+
+    # wrappers dict is in the format:
+    # {"wrapper_type": {"key": [Callable1, Callable2, ...]} }
+    @classmethod
+    def init_wrappers(cls) -> dict[str, dict[str, list[Callable]]]:
+        return {}
 
 def string_to_seed(data):
     crc = 0xFFFFFFFF

@@ -390,9 +390,8 @@ class ApplyPulidFlux:
                 set_model_dit_patch_replace(model, patch_kwargs, ("single_block", i))
                 ca_idx += 1
 
-        # if len(model.get_additional_models_with_key("pulid_flux_model_patcher")) == 0:
-        #     print("草草草草草草草凹槽哦冲啊")
-        #     model.set_additional_models("pulid_flux_model_patcher", [pulid_flux])
+        if len(model.get_additional_models_with_key("pulid_flux_model_patcher")) == 0:
+            model.set_additional_models("pulid_flux_model_patcher", [pulid_flux])
 
         if len(model.get_wrappers(comfy.patcher_extension.WrappersMP.OUTER_SAMPLE, wrappers_name)) == 0:
             # Just add it once when connecting in series
