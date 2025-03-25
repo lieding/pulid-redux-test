@@ -365,13 +365,16 @@ class ApplyPulidFlux:
         sigma_end = model.get_model_object("model_sampling").percent_to_sigma(end_at)
 
         patch_kwargs = {
-            "pulid_model": pulid_flux,
+            "pulid_ca": pulid_flux.model.pulid_ca,
             "weight": weight,
             "embedding": cond,
             "sigma_start": sigma_start,
             "sigma_end": sigma_end,
-            "mask": attn_mask
+            "mask": attn_mask,
+            "double_interval": pulid_flux.model.double_interval
         }
+
+        torch.save(patch_kwargs, "~/patch_kwargs_fp8.pt")
 
         ca_idx = 0
         for i in range(19):
@@ -386,6 +389,7 @@ class ApplyPulidFlux:
                 ca_idx += 1
 
         if len(model.get_additional_models_with_key("pulid_flux_model_patcher")) == 0:
+            print("草草草草草草草凹槽哦冲啊")
             model.set_additional_models("pulid_flux_model_patcher", [pulid_flux])
 
         if len(model.get_wrappers(comfy.patcher_extension.WrappersMP.OUTER_SAMPLE, wrappers_name)) == 0:

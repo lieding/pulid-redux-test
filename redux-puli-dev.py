@@ -136,7 +136,7 @@ def main():
             ckpt_name="flux1-dev-fp8.safetensors"
         )
         loadimage = LoadImage()
-        reference_loadimage = loadimage.load_image(image="DUJARDIN-JEAN-AC-PP-7994-PS-03-A_LOGO-822x1024.jpg")
+        reference_loadimage = loadimage.load_image(image="reference.jpg")
 
         pulidfluxmodelloader = PulidFluxModelLoader()
         pulidfluxmodelloader_19 = pulidfluxmodelloader.load_model(
@@ -168,7 +168,7 @@ def main():
             image=get_value_at_index(reference_loadimage, 0),
             unique_id=1774265400529356555,
         )
-        print(get_value_at_index(applypulidflux_20))
+        print(get_value_at_index(applypulidflux_20, 0))
 
 
 def __main():

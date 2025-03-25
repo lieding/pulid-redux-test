@@ -29,8 +29,8 @@ def set_model_dit_patch_replace(model, patch_kwargs, key):
     else:
         to["patches_replace"]["dit"][key].add(pulid_patch, **patch_kwargs)
 
-def pulid_patch(img, pulid_model=None, ca_idx=None, weight=1.0, embedding=None, mask=None, transformer_options={}):
-    pulid_img = weight * pulid_model.model.pulid_ca[ca_idx].to(img.device)(embedding, img)
+def pulid_patch(img, pulid_ca=None, ca_idx=None, weight=1.0, embedding=None, mask=None, transformer_options={}):
+    pulid_img = weight * pulid_ca[ca_idx].to(img.device)(embedding, img)
     if mask is not None:
         pulid_temp_attrs = transformer_options.get(PatchKeys.pulid_patch_key_attrs, {})
         latent_image_shape = pulid_temp_attrs.get("latent_image_shape", None)
@@ -72,7 +72,7 @@ class DitDoubleBlockReplace:
         for i, callback in enumerate(self.callback):
             if self.kwargs[i]["sigma_start"] >= sigma >= self.kwargs[i]["sigma_end"]:
                 img = img + callback(temp_img,
-                                     pulid_model=self.kwargs[i]['pulid_model'],
+                                     pulid_model=self.kwargs[i]['pulid_ca'],
                                      ca_idx=self.kwargs[i]['ca_idx'],
                                      weight=self.kwargs[i]['weight'],
                                      embedding=self.kwargs[i]['embedding'],
@@ -120,7 +120,7 @@ class DitSingleBlockReplace:
         for i, callback in enumerate(self.callback):
             if self.kwargs[i]["sigma_start"] >= sigma >= self.kwargs[i]["sigma_end"]:
                 real_img = real_img + callback(temp_img,
-                                               pulid_model=self.kwargs[i]['pulid_model'],
+                                               pulid_model=self.kwargs[i]['pulid_ca'],
                                                ca_idx=self.kwargs[i]['ca_idx'],
                                                weight=self.kwargs[i]['weight'],
                                                embedding=self.kwargs[i]['embedding'],

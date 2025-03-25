@@ -540,15 +540,15 @@ class ApplyPulidFlux:
 
 
 NODE_CLASS_MAPPINGS = {
-    "PulidFluxModelLoader": PulidFluxModelLoader,
-    "PulidFluxInsightFaceLoader": PulidFluxInsightFaceLoader,
-    "PulidFluxEvaClipLoader": PulidFluxEvaClipLoader,
-    "ApplyPulidFlux": ApplyPulidFlux,
+    "PPulidFluxModelLoader": PulidFluxModelLoader,
+    "PPulidFluxInsightFaceLoader": PulidFluxInsightFaceLoader,
+    "PPulidFluxEvaClipLoader": PulidFluxEvaClipLoader,
+    "AApplyPulidFlux": ApplyPulidFlux,
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "PulidFluxModelLoader": "Load PuLID Flux Model",
-    "PulidFluxInsightFaceLoader": "Load InsightFace (PuLID Flux)",
-    "PulidFluxEvaClipLoader": "Load Eva Clip (PuLID Flux)",
-    "ApplyPulidFlux": "Apply PuLID Flux",
+    "PPulidFluxModelLoader": "Load PuLID Flux Model",
+    "PPulidFluxInsightFaceLoader": "Load InsightFace (PuLID Flux)",
+    "PPulidFluxEvaClipLoader": "Load Eva Clip (PuLID Flux)",
+    "AApplyPulidFlux": "Apply PuLID Flux",
 }
