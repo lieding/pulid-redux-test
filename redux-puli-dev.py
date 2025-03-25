@@ -5,7 +5,7 @@ from typing import Sequence, Mapping, Any, Union
 import torch
 from comfy import model_management
 from extra_config import load_extra_path_config as _load_extra_path_config
-from nodes import NODE_CLASS_MAPPINGS, CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage, VAELoader
+from nodes import NODE_CLASS_MAPPINGS, CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage, VAELoader, UNETLoader
 from comfy_extras.nodes_custom_sampler import BasicGuider, BasicScheduler, KSamplerSelect, Noise_RandomNoise, SamplerCustomAdvanced
 import node_helpers
 
@@ -128,19 +128,22 @@ def main():
     
     import_custom_nodes()
     with torch.inference_mode():
-        loader = CheckpointLoaderSimple()
-        model = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
+        loader = UNETLoader() # CheckpointLoaderSimple()
+        #model = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
+        model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors")
         vaeload = VAELoader().load_vae("ae.sft")
 
-        # redux_output = torch.load("female_1_redux_prompt.pt")
-        dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
-        dualcliploader_34 = dualcliploader.load_clip(
-            clip_name1="clip_l.safetensors", clip_name2="t5xxl_fp16.safetensors", type="flux",
-        )
-        encode = CLIPTextEncode().encode(
-            clip=get_value_at_index(dualcliploader_34, 0),
-            text="This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures actor Hugh Jackman in a close-up portrait. Jackman, with his neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. "
-        )
+        
+        redux_output = torch.load("female_1_redux_prompt.pt")
+        if False:
+            dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
+            dualcliploader_34 = dualcliploader.load_clip(
+                clip_name1="clip_l.safetensors", clip_name2="t5xxl_fp16.safetensors", type="flux",
+            )
+            encode = CLIPTextEncode().encode(
+                clip=get_value_at_index(dualcliploader_34, 0),
+                text="This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures actor Hugh Jackman in a close-up portrait. Jackman, with his neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. "
+            )
         
         ksamplerselect_35 = KSamplerSelect().get_sampler(sampler_name="euler")
 
@@ -153,7 +156,7 @@ def main():
         randomnoise_13 = (Noise_RandomNoise(random.randint(1, 2**64)),)
 
         fluxguidance_16 = _flux_guidance(
-            guidance=3.5, conditioning=get_value_at_index(encode, 0)
+            guidance=3.5, conditioning=get_value_at_index(redux_output, 0)
         )
 
         basicguider_17 = BasicGuider().get_guider(
