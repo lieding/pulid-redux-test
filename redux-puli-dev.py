@@ -5,9 +5,8 @@ from typing import Sequence, Mapping, Any, Union
 import torch
 from nodes import NODE_CLASS_MAPPINGS
 from comfy import model_management
-from huggingface_hub import hf_hub_download
 from extra_config import load_extra_path_config as _load_extra_path_config
-from nodes import CheckpointLoaderSimple, LoadImage, CLIPTextEncode
+from nodes import CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
     """Returns the value at the given index of a sequence or mapping.
@@ -125,221 +124,62 @@ def main():
     
     import_custom_nodes()
     with torch.inference_mode():
-        #loader = CheckpointLoaderSimple()
-        #ckpt = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
-        img_loader = LoadImage()
+        loader = CheckpointLoaderSimple()
+        model, _ , vae = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
 
-        style_img = img_loader.load_image(image="DUJARDIN-JEAN-AC-PP-7994-PS-03-A_LOGO-822x1024.jpg")
-
-        dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
-        dualcliploader_34 = dualcliploader.load_clip(
-            clip_name1="clip_l.safetensors", clip_name2="t5xxl_fp16.safetensors", type="flux"
-        )
-
-
-        StyleModelLoader = NODE_CLASS_MAPPINGS["StyleModelLoader"]
-        CLIPVisionLoader = NODE_CLASS_MAPPINGS["CLIPVisionLoader"]
-
-        stylemodelloader = StyleModelLoader()
-        stylemodelloader_28 = stylemodelloader.load_style_model(
-            style_model_name="flux1-redux-dev.safetensors"
-        )
-
-        clipvisionloader = CLIPVisionLoader()
-        clipvisionloader_29 = clipvisionloader.load_clip(
-            clip_name="sigclip_vision_patch14_384.safetensors"
-        )
-
-        reduxadvanced = NODE_CLASS_MAPPINGS["ReduxAdvanced"]()
-
-        cliptextencode = CLIPTextEncode()
-        cliptextencode_32 = cliptextencode.encode(
-            text="Ultra realistic. Masterpiece. This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures man in a close-up portrait. He is neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. ",
-            clip=get_value_at_index(dualcliploader_34, 0)
-        )
-
-        reduxadvanced_24 = reduxadvanced.apply_stylemodel(
-            downsampling_factor=1,
-            downsampling_function="nearest",
-            mode="keep aspect ratio",
-            weight=0.5,
-            autocrop_margin=0.1,
-            conditioning=get_value_at_index(cliptextencode_32, 0),
-            style_model=get_value_at_index(stylemodelloader_28, 0),
-            clip_vision=get_value_at_index(clipvisionloader_29, 0),
-            image=get_value_at_index(style_img, 0),
-        )
-
-        redux_output = get_value_at_index(reduxadvanced_24, 0)
-
-        print(redux_output, redux_output.shape)
-
-
+        redux_output = torch.load("female_1_redux_prompt.pt")
         
-
-
-def __main():
-    import_custom_nodes()
-    with torch.inference_mode():
-        RandomNoise = NODE_CLASS_MAPPINGS["RandomNoise"]
-        UNETLoader = NODE_CLASS_MAPPINGS["UNETLoader"]
-        PulidFluxModelLoader = NODE_CLASS_MAPPINGS["PulidFluxModelLoader"]
-        PulidFluxEvaClipLoader = NODE_CLASS_MAPPINGS["PulidFluxEvaClipLoader"]
-        PulidFluxInsightFaceLoader = NODE_CLASS_MAPPINGS["PulidFluxInsightFaceLoader"]
-        ApplyPulidFlux = NODE_CLASS_MAPPINGS["ApplyPulidFlux"]
-        LoadImage = NODE_CLASS_MAPPINGS["LoadImage"]
-        StyleModelLoader = NODE_CLASS_MAPPINGS["StyleModelLoader"]
-        CLIPVisionLoader = NODE_CLASS_MAPPINGS["CLIPVisionLoader"]
-        
-
-        randomnoise = RandomNoise()
-        randomnoise_13 = randomnoise.get_noise(noise_seed=random.randint(1, 2**64))
-
-        unetloader = UNETLoader()
-        unetloader_18 = unetloader.load_unet(
-            unet_name="基础算法_F.1", weight_dtype="fp8_e4m3fn"
-        )
-
-        loadimage = LoadImage()
-        reference_loadimage = loadimage.load_image(image="PHOTO-2025-03-04-16-32-01.jpg")
-
-        style_loadimage = loadimage.load_image(
-            image="DUJARDIN-JEAN-AC-PP-7994-PS-03-A_LOGO-822x1024.jpg"
-        )
-
-        pulidfluxmodelloader = PulidFluxModelLoader()
-        pulidfluxmodelloader_19 = pulidfluxmodelloader.load_model(
-            pulid_file="pulid_flux_v0.9.1.safetensors"
-        )
-
-        pulidfluxevacliploader = PulidFluxEvaClipLoader()
-        pulidfluxevacliploader_21 = pulidfluxevacliploader.load_eva_clip()
-
-        pulidfluxinsightfaceloader =PulidFluxInsightFaceLoader()
-        pulidfluxinsightfaceloader_22 = pulidfluxinsightfaceloader.load_insightface(
-            provider="CUDA"
-        )
-
-        applypulidflux = ApplyPulidFlux()
-        applypulidflux_20 = applypulidflux.apply_pulid_flux(
-            weight=0.9500000000000001,
-            start_at=0,
-            end_at=1,
-            fusion="mean",
-            fusion_weight_max=1,
-            fusion_weight_min=0,
-            train_step=1000,
-            use_gray=True,
-            model=get_value_at_index(unetloader_18, 0),
-            pulid_flux=get_value_at_index(pulidfluxmodelloader_19, 0),
-            eva_clip=get_value_at_index(pulidfluxevacliploader_21, 0),
-            face_analysis=get_value_at_index(pulidfluxinsightfaceloader_22, 0),
-            image=get_value_at_index(reference_loadimage, 0),
-            unique_id=1774265400529356555,
-        )
-
-        stylemodelloader = StyleModelLoader()
-        stylemodelloader_28 = stylemodelloader.load_style_model(
-            style_model_name="flux1-redux-dev"
-        )
-
-        clipvisionloader = CLIPVisionLoader()
-        clipvisionloader_29 = clipvisionloader.load_clip(
-            clip_name="siglip-so400m-patch14-384"
-        )
-
-        dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
-        dualcliploader_34 = dualcliploader.load_clip(
-            clip_name1="clip_l", clip_name2="t5xxl_fp16", type="flux", device="default"
-        )
-
-        cliptextencode = NODE_CLASS_MAPPINGS["CLIPTextEncode"]()
-        cliptextencode_32 = cliptextencode.encode(
-            text="Ultra realistic. Masterpiece. This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures man in a close-up portrait. He is neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. ",
-            clip=get_value_at_index(dualcliploader_34, 0),
-        )
 
         ksamplerselect = NODE_CLASS_MAPPINGS["KSamplerSelect"]()
         ksamplerselect_35 = ksamplerselect.get_sampler(sampler_name="euler")
 
-        emptylatentimage = NODE_CLASS_MAPPINGS["EmptyLatentImage"]()
+        emptylatentimage = EmptyLatentImage()
         emptylatentimage_37 = emptylatentimage.generate(
-            width=768, height=1344, batch_size=1
+            width=512, height=896, batch_size=1
         )
 
-        vaeloader = NODE_CLASS_MAPPINGS["VAELoader"]()
-        vaeloader_39 = vaeloader.load_vae(vae_name="ae.sft")
+        RandomNoise = NODE_CLASS_MAPPINGS["RandomNoise"]
+        randomnoise = RandomNoise()
+        randomnoise_13 = randomnoise.get_noise(noise_seed=random.randint(1, 2**64))
 
-
-        loraloadermodelonly = NODE_CLASS_MAPPINGS["LoraLoaderModelOnly"]()
-        loraloadermodelonly_50 = loraloadermodelonly.load_lora_model_only(
-            lora_name="XLabs F.1 Realism LoRA_V1",
-            strength_model=0.8,
-            model=get_value_at_index(applypulidflux_20, 0),
-        )
-
-        imagescale = NODE_CLASS_MAPPINGS["ImageScale"]()
-        reduxadvanced = NODE_CLASS_MAPPINGS["ReduxAdvanced"]()
         fluxguidance = NODE_CLASS_MAPPINGS["FluxGuidance"]()
+        fluxguidance_16 = fluxguidance.append(
+            guidance=3.5, conditioning=redux_output
+        )
+
         basicguider = NODE_CLASS_MAPPINGS["BasicGuider"]()
+        basicguider_17 = basicguider.get_guider(
+            model=model,
+            conditioning=get_value_at_index(fluxguidance_16, 0),
+        )
+
         basicscheduler = NODE_CLASS_MAPPINGS["BasicScheduler"]()
+        basicscheduler_36 = basicscheduler.get_sigmas(
+            scheduler="simple",
+            steps=28,
+            denoise=1,
+            model=model,
+        )
+
         samplercustomadvanced = NODE_CLASS_MAPPINGS["SamplerCustomAdvanced"]()
-        vaedecode = NODE_CLASS_MAPPINGS["VAEDecode"]()
-        saveimage = NODE_CLASS_MAPPINGS["SaveImage"]()
+        samplercustomadvanced_10 = samplercustomadvanced.sample(
+            noise=get_value_at_index(randomnoise_13, 0),
+            guider=get_value_at_index(basicguider_17, 0),
+            sampler=get_value_at_index(ksamplerselect_35, 0),
+            sigmas=get_value_at_index(basicscheduler_36, 0),
+            latent_image=get_value_at_index(emptylatentimage_37, 0),
+        )
+        vaedecode = VAEDecode()
+        vaedecode_38 = vaedecode.decode(
+            samples=get_value_at_index(samplercustomadvanced_10, 0),
+            vae=vae,
+        )
 
-        for q in range(1):
-            imagescale_26 = imagescale.upscale(
-                upscale_method="nearest-exact",
-                width=768,
-                height=1344,
-                crop="center",
-                image=get_value_at_index(style_loadimage, 0),
-            )
+        saveimage = SaveImage()
 
-            reduxadvanced_24 = reduxadvanced.apply_stylemodel(
-                downsampling_factor=1,
-                downsampling_function="nearest",
-                mode="keep aspect ratio",
-                weight=0.5,
-                autocrop_margin=0.1,
-                conditioning=get_value_at_index(cliptextencode_32, 0),
-                style_model=get_value_at_index(stylemodelloader_28, 0),
-                clip_vision=get_value_at_index(clipvisionloader_29, 0),
-                image=get_value_at_index(imagescale_26, 0),
-            )
-
-            fluxguidance_16 = fluxguidance.append(
-                guidance=3.5, conditioning=get_value_at_index(reduxadvanced_24, 0)
-            )
-
-            basicguider_17 = basicguider.get_guider(
-                model=get_value_at_index(loraloadermodelonly_50, 0),
-                conditioning=get_value_at_index(fluxguidance_16, 0),
-            )
-
-            basicscheduler_36 = basicscheduler.get_sigmas(
-                scheduler="simple",
-                steps=28,
-                denoise=1,
-                model=get_value_at_index(loraloadermodelonly_50, 0),
-            )
-
-            samplercustomadvanced_10 = samplercustomadvanced.sample(
-                noise=get_value_at_index(randomnoise_13, 0),
-                guider=get_value_at_index(basicguider_17, 0),
-                sampler=get_value_at_index(ksamplerselect_35, 0),
-                sigmas=get_value_at_index(basicscheduler_36, 0),
-                latent_image=get_value_at_index(emptylatentimage_37, 0),
-            )
-
-            vaedecode_38 = vaedecode.decode(
-                samples=get_value_at_index(samplercustomadvanced_10, 0),
-                vae=get_value_at_index(vaeloader_39, 0),
-            )
-
-            saveimage_40 = saveimage.save_images(
-                filename_prefix="ComfyUI", images=get_value_at_index(vaedecode_38, 0)
-            )
+        saveimage.save_images(
+            filename_prefix="result", images=get_value_at_index(vaedecode_38, 0)
+        )
 
 
 if __name__ == "__main__":
