@@ -125,11 +125,16 @@ def main():
     
     import_custom_nodes()
     with torch.inference_mode():
-        loader = CheckpointLoaderSimple()
-        ckpt = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
+        #loader = CheckpointLoaderSimple()
+        #ckpt = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
         img_loader = LoadImage()
 
         style_img = img_loader.load_image(image="DUJARDIN-JEAN-AC-PP-7994-PS-03-A_LOGO-822x1024.jpg")
+
+        dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
+        dualcliploader_34 = dualcliploader.load_clip(
+            clip_name1="clip_l", clip_name2="t5xxl_fp16", type="flux", device="default"
+        )
 
 
         StyleModelLoader = NODE_CLASS_MAPPINGS["StyleModelLoader"]
@@ -150,7 +155,7 @@ def main():
         cliptextencode = CLIPTextEncode()
         cliptextencode_32 = cliptextencode.encode(
             text="Ultra realistic. Masterpiece. This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures man in a close-up portrait. He is neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. ",
-            clip=get_value_at_index(ckpt, 1)
+            clip=get_value_at_index(dualcliploader_34, 0)
         )
 
         reduxadvanced_24 = reduxadvanced.apply_stylemodel(
