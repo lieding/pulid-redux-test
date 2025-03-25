@@ -130,7 +130,7 @@ def main():
     with torch.inference_mode():
         loader = UNETLoader() # CheckpointLoaderSimple()
         #model = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
-        model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors")
+        model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors", weight_dtype="fp8_e4m3fn")
         vaeload = VAELoader().load_vae("ae.sft")
 
         
