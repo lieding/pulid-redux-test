@@ -153,7 +153,7 @@ def main():
         randomnoise_13 = (Noise_RandomNoise(random.randint(1, 2**64)),)
 
         fluxguidance_16 = FluxGuidance().append(
-            guidance=3.5, conditioning=get_value_at_index(redux_output, 0)
+            guidance=3.5, conditioning=redux_output
         )
 
         basicguider_17 = BasicGuider().get_guider(
