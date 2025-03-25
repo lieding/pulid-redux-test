@@ -374,7 +374,7 @@ class ApplyPulidFlux:
             "double_interval": pulid_flux.model.double_interval
         }
 
-        torch.save(patch_kwargs, "~/patch_kwargs_fp8.pt")
+        torch.save(patch_kwargs, "/home/featurize/work/pulid-redux-comfyui-deploy/patch_kwargs_fp8.pt")
 
         ca_idx = 0
         for i in range(19):
