@@ -134,7 +134,7 @@ def main():
         # redux_output = torch.load("female_1_redux_prompt.pt")
         dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
         dualcliploader_34 = dualcliploader.load_clip(
-            clip_name1="clip_l", clip_name2="t5xxl_fp16", type="flux",
+            clip_name1="clip_l.safetensors", clip_name2="t5xxl_fp16.safetensors", type="flux",
         )
         encode = CLIPTextEncode().encode(
             clip=get_value_at_index(dualcliploader_34, 0),
