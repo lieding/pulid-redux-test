@@ -7,6 +7,7 @@ from comfy import model_management
 from extra_config import load_extra_path_config as _load_extra_path_config
 from nodes import NODE_CLASS_MAPPINGS, CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage, VAELoader, UNETLoader
 from comfy_extras.nodes_custom_sampler import BasicGuider, BasicScheduler, KSamplerSelect, Noise_RandomNoise, SamplerCustomAdvanced
+from comfy_extras.nodes_flux import FluxGuidance
 import node_helpers
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
@@ -120,10 +121,6 @@ def import_custom_nodes() -> None:
     # Initializing custom nodes
     init_extra_nodes()
 
-def _flux_guidance(conditioning, guidance):
-    c = node_helpers.conditioning_set_values(conditioning, {"guidance": guidance})
-    return (c, )
-
 def main():
     
     import_custom_nodes()
@@ -155,7 +152,7 @@ def main():
        
         randomnoise_13 = (Noise_RandomNoise(random.randint(1, 2**64)),)
 
-        fluxguidance_16 = _flux_guidance(
+        fluxguidance_16 = FluxGuidance().append(
             guidance=3.5, conditioning=get_value_at_index(redux_output, 0)
         )
 
