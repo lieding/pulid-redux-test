@@ -3,12 +3,10 @@ import random
 import sys
 from typing import Sequence, Mapping, Any, Union
 import torch
-from nodes import NODE_CLASS_MAPPINGS
 from comfy import model_management
-from comfy.samplers import sampler_object
-from comfy.sample import prepare_noise
 from extra_config import load_extra_path_config as _load_extra_path_config
 from nodes import CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage
+from comfy_extras.nodes_custom_sampler import BasicGuider, BasicScheduler, KSamplerSelect, Noise_RandomNoise, SamplerCustomAdvanced
 import node_helpers
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
@@ -126,19 +124,6 @@ def _flux_guidance(conditioning, guidance):
     c = node_helpers.conditioning_set_values(conditioning, {"guidance": guidance})
     return (c, )
 
-def ksamplerselect_get_sampler(sampler_name):
-    sampler = sampler_object(sampler_name)
-    return (sampler, )
-
-class Noise_RandomNoise:
-    def __init__(self, seed):
-        self.seed = seed
-
-    def generate_noise(self, input_latent):
-        latent_image = input_latent["samples"]
-        batch_inds = input_latent["batch_index"] if "batch_index" in input_latent else None
-        return prepare_noise(latent_image, self.seed, batch_inds)
-
 def main():
     
     import_custom_nodes()
@@ -148,7 +133,7 @@ def main():
 
         redux_output = torch.load("female_1_redux_prompt.pt")
         
-        ksamplerselect_35 = ksamplerselect_get_sampler(sampler_name="euler")
+        ksamplerselect_35 = KSamplerSelect().get_sampler(sampler_name="euler")
 
         emptylatentimage = EmptyLatentImage()
         emptylatentimage_37 = emptylatentimage.generate(
@@ -162,22 +147,19 @@ def main():
             guidance=3.5, conditioning=redux_output
         )
 
-        basicguider = NODE_CLASS_MAPPINGS["BasicGuider"]()
-        basicguider_17 = basicguider.get_guider(
+        basicguider_17 = BasicGuider().get_guider(
             model=model,
             conditioning=get_value_at_index(fluxguidance_16, 0),
         )
 
-        basicscheduler = NODE_CLASS_MAPPINGS["BasicScheduler"]()
-        basicscheduler_36 = basicscheduler.get_sigmas(
+        basicscheduler_36 = BasicScheduler().get_sigmas(
             scheduler="simple",
             steps=28,
             denoise=1,
             model=model,
         )
 
-        samplercustomadvanced = NODE_CLASS_MAPPINGS["SamplerCustomAdvanced"]()
-        samplercustomadvanced_10 = samplercustomadvanced.sample(
+        samplercustomadvanced_10 = SamplerCustomAdvanced().sample(
             noise=get_value_at_index(randomnoise_13, 0),
             guider=get_value_at_index(basicguider_17, 0),
             sampler=get_value_at_index(ksamplerselect_35, 0),
