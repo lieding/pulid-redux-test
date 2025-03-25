@@ -15,9 +15,9 @@ typing_extensions
 pyyaml
 scipy
 # For PuLID
-facexlib
-insightface
-onnxruntime
-onnxruntime-gpu
-ftfy
-timm
+#facexlib
+#insightface
+#onnxruntime
+#onnxruntime-gpu
+#ftfy
+#timm
