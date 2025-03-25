@@ -137,7 +137,7 @@ def main():
 
         stylemodelloader = StyleModelLoader()
         stylemodelloader_28 = stylemodelloader.load_style_model(
-            style_model_name="flux1-redux-dev"
+            style_model_name="flux1-redux-dev.safetensors"
         )
 
         clipvisionloader = CLIPVisionLoader()
