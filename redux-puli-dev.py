@@ -121,7 +121,6 @@ def import_custom_nodes() -> None:
 
 
 def main():
-    hf_hub_download(repo_id="Comfy-Org/flux1-dev", filename="flux1-dev-fp8.safetensors", cache_dir="models/checkpoints/")
     
     import_custom_nodes()
     with torch.inference_mode():
@@ -134,7 +133,7 @@ def main():
 
         checkpointLoaderSimple = CheckpointLoaderSimple()
         ckpt = checkpointLoaderSimple.load_checkpoint(
-            ckpt_name="flux1-dev.safetensors"
+            ckpt_name="flux1-dev-fp8.safetensors"
         )
         loadimage = LoadImage()
         reference_loadimage = loadimage.load_image(image="PHOTO-2025-03-04-16-32-01.jpg")
