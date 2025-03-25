@@ -6,7 +6,7 @@ import torch
 from nodes import NODE_CLASS_MAPPINGS
 from comfy import model_management
 from huggingface_hub import hf_hub_download
-from utils.extra_config import load_extra_path_config as _load_extra_path_config
+from extra_config import load_extra_path_config as _load_extra_path_config
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
     """Returns the value at the given index of a sequence or mapping.
