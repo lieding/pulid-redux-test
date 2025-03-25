@@ -133,7 +133,7 @@ def main():
 
         dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
         dualcliploader_34 = dualcliploader.load_clip(
-            clip_name1="clip_l", clip_name2="t5xxl_fp16", type="flux", device="default"
+            clip_name1="clip_l", clip_name2="t5xxl_fp16", type="flux"
         )
 
 
