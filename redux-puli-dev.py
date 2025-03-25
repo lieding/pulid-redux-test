@@ -157,7 +157,7 @@ def main():
         )
 
         basicguider_17 = BasicGuider().get_guider(
-            model=model,
+            model=get_value_at_index(model, 0),
             conditioning=get_value_at_index(fluxguidance_16, 0),
         )
 
@@ -165,7 +165,7 @@ def main():
             scheduler="simple",
             steps=28,
             denoise=1,
-            model=model,
+            model=get_value_at_index(model, 0),
         )
 
         samplercustomadvanced_10 = SamplerCustomAdvanced().sample(
