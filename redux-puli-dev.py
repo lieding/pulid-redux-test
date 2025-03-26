@@ -125,7 +125,7 @@ def import_custom_nodes() -> None:
 def main():
     with torch.inference_mode():
         loader = UNETLoader()
-        model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors", weight_dtype="fp8_e4m3fn_fast")
+        model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors", weight_dtype="default")
         vaeload = VAELoader().load_vae("ae.sft")
 
         emptylatentimage = EmptyLatentImage()
@@ -142,8 +142,8 @@ def main():
             seed=random.randint(1, 2**64),
             steps=28,
             cfg=3.5,
-            sampler_name="euler",
-            scheduler="simple",
+            sampler_name="dpmpp_sde",
+            scheduler="karras",
             positive=get_value_at_index(positive, 0),
             negative=get_value_at_index(negative, 0),
             latent_image=get_value_at_index(emptylatentimage_37, 0),
