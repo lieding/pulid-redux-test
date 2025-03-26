@@ -133,8 +133,21 @@ def main():
             width=512, height=896, batch_size=1
         )
 
-        positive = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/positive.pt")
-        negative = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/negative.pt")
+        # positive = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/positive.pt")
+        # negative = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/negative.pt")
+
+        dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
+        dualcliploader_34 = dualcliploader.load_clip(
+            clip_name1="clip_l.safetensors", clip_name2="t5xxl_fp16.safetensors", type="flux",
+        )
+        positive = CLIPTextEncode().encode(
+            clip=get_value_at_index(dualcliploader_34, 0),
+            text="This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures actor Hugh Jackman in a close-up portrait. Jackman, with his neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. "
+        )
+        negative = CLIPTextEncode().encode(
+            clip=get_value_at_index(dualcliploader_34, 0),
+            text=""
+        )
 
 
         ksampler = KSampler().sample(
