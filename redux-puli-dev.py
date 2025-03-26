@@ -124,63 +124,66 @@ def import_custom_nodes() -> None:
 
 
 def main():
-    loader = UNETLoader()
-    model = loader.load_unet(unet_name="flux-dev-fp8.safetensors", weight_dtype="default")
-    vae_model = VAELoader().load_vae("ae.sft")
+    # loader = UNETLoader()
+    # model = loader.load_unet(unet_name="flux-dev-fp8.safetensors", weight_dtype="default")
+    # vae_model = VAELoader().load_vae("ae.sft")
     
-    model_loaders = [model, vae_model, ]
+    # model_loaders = [model, vae_model, ]
 
-    model_management.load_models_gpu([
-        loader[0].patcher if hasattr(loader[0], 'patcher') else loader[0] for loader in model_loaders
-    ])
+    # model_management.load_models_gpu([
+    #     loader[0].patcher if hasattr(loader[0], 'patcher') else loader[0] for loader in model_loaders
+    # ])
     with torch.inference_mode():
 
-        emptylatentimage = EmptyLatentImage()
-        emptylatentimage_37 = emptylatentimage.generate(
-            width=512, height=896, batch_size=1
-        )
-
-        positive = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/positive.pt")
-        negative = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/negative.pt")
-
-        # dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
-        # dualcliploader_34 = dualcliploader.load_clip(
-        #     clip_name1="clip_l.safetensors", clip_name2="t5xxl_fp16.safetensors", type="flux",
-        # )
-        # positive = CLIPTextEncode().encode(
-        #     clip=get_value_at_index(dualcliploader_34, 0),
-        #     text="This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures actor Hugh Jackman in a close-up portrait. Jackman, with his neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. "
-        # )
-        # negative = CLIPTextEncode().encode(
-        #     clip=get_value_at_index(dualcliploader_34, 0),
-        #     text=""
+        # emptylatentimage = EmptyLatentImage()
+        # emptylatentimage_37 = emptylatentimage.generate(
+        #     width=512, height=896, batch_size=1
         # )
 
+        # positive = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/positive.pt")
+        # negative = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/negative.pt")
 
-        ksampler = KSampler().sample(
-            model=get_value_at_index(model, 0),
-            seed=random.randint(1, 2**64),
-            steps=28,
-            cfg=3.5,
-            sampler_name="dpmpp_sde",
-            scheduler="karras",
-            positive=get_value_at_index(positive, 0),
-            negative=get_value_at_index(negative, 0),
-            latent_image=get_value_at_index(emptylatentimage_37, 0),
-            denoise=1
+        dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
+        dualcliploader_34 = dualcliploader.load_clip(
+            clip_name1="t5xxl_fp16.safetensors", clip_name2="clip_l.safetensors", type="flux",
+        )
+        positive = CLIPTextEncode().encode(
+            clip=get_value_at_index(dualcliploader_34, 0),
+            text="This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures actor Hugh Jackman in a close-up portrait. Jackman, with his neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. "
+        )
+        negative = CLIPTextEncode().encode(
+            clip=get_value_at_index(dualcliploader_34, 0),
+            text=""
         )
 
-        vaedecode = VAEDecode()
-        vaedecode_38 = vaedecode.decode(
-            samples=get_value_at_index(ksampler, 0),
-            vae=get_value_at_index(vae_model, 0),
-        )
+        torch.save(positive, "/home/featurize/work/pulid-redux-comfyui-deploy/positive.pt")
+        torch.save(negative, "/home/featurize/work/pulid-redux-comfyui-deploy/negative.pt")
 
-        saveimage = SaveImage()
 
-        saveimage.save_images(
-            filename_prefix="result", images=get_value_at_index(vaedecode_38, 0)
-        )
+        # ksampler = KSampler().sample(
+        #     model=get_value_at_index(model, 0),
+        #     seed=random.randint(1, 2**64),
+        #     steps=28,
+        #     cfg=3.5,
+        #     sampler_name="dpmpp_sde",
+        #     scheduler="karras",
+        #     positive=get_value_at_index(positive, 0),
+        #     negative=get_value_at_index(negative, 0),
+        #     latent_image=get_value_at_index(emptylatentimage_37, 0),
+        #     denoise=1
+        # )
+
+        # vaedecode = VAEDecode()
+        # vaedecode_38 = vaedecode.decode(
+        #     samples=get_value_at_index(ksampler, 0),
+        #     vae=get_value_at_index(vae_model, 0),
+        # )
+
+        # saveimage = SaveImage()
+
+        # saveimage.save_images(
+        #     filename_prefix="result", images=get_value_at_index(vaedecode_38, 0)
+        # )
 
 
 def _main():
