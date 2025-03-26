@@ -9,6 +9,8 @@ from collections.abc import Collection
 
 from comfy.cli_args import args
 
+import yaml
+
 supported_pt_extensions: set[str] = {'.ckpt', '.pt', '.pt2', '.bin', '.pth', '.safetensors', '.pkl', '.sft'}
 
 folder_names_and_paths: dict[str, tuple[list[str], set[str]]] = {}
@@ -19,7 +21,10 @@ if args.base_directory:
 else:
     base_path = os.path.dirname(os.path.realpath(__file__))
 
-models_dir = os.path.join("/home/featurize/work/app/comfyui/ComfyUI", "models")
+with open("extra_model_paths.yaml", "r") as file:
+    base_path = yaml.safe_load(file)['comfyui']['base_path']
+
+models_dir = os.path.join(base_path, "models")
 folder_names_and_paths["checkpoints"] = ([os.path.join(models_dir, "checkpoints")], supported_pt_extensions)
 folder_names_and_paths["configs"] = ([os.path.join(models_dir, "configs")], [".yaml"])
 
