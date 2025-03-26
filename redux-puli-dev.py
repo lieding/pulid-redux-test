@@ -135,7 +135,7 @@ def import_custom_nodes() -> None:
 
 
 def main():
-    import_custom_nodes()
+    # import_custom_nodes()
     loader = UNETLoader()
     model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors", weight_dtype="default")
     vae_model = VAELoader().load_vae("ae.sft")
