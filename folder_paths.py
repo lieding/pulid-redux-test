@@ -290,7 +290,6 @@ def get_full_path(folder_name: str, filename: str) -> str | None:
             return full_path
         elif os.path.islink(full_path):
             logging.warning("WARNING path {} exists but doesn't link anywhere, skipping.".format(full_path))
-            return os.path.realpath(full_path)
     print(filename, folders[0])
     return None
 

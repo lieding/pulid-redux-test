@@ -9,6 +9,7 @@ from nodes import NODE_CLASS_MAPPINGS, CheckpointLoaderSimple, LoadImage, CLIPTe
 from comfy_extras.nodes_custom_sampler import BasicGuider, BasicScheduler, KSamplerSelect, Noise_RandomNoise, SamplerCustomAdvanced
 from comfy_extras.nodes_flux import FluxGuidance
 import node_helpers
+from apply_pulid import PulidFluxModel, apply_pulid_flux
 
 def get_value_at_index(obj: Union[Sequence, Mapping], index: int) -> Any:
     """Returns the value at the given index of a sequence or mapping.
@@ -142,7 +143,20 @@ def main():
     model_management.load_models_gpu([
         loader[0].patcher if hasattr(loader[0], 'patcher') else loader[0] for loader in model_loaders
     ])
+    pulid_model = PulidFluxModel()
+    pulid_model.from_pretrained("pulid_flux_v0.9.1.safetensors")
     with torch.inference_mode():
+        pulid_output = torch.load("pulid_outout_2025-03-26 21:53.pt")
+        model = apply_pulid_flux(
+            model=get_value_at_index(model, 0),
+            pulid_flux=pulid_model,
+            cond=pulid_output["embedding"],
+            weight=pulid_output["weight"],
+            start_at=pulid_output["sigma_start"],
+            end_at=pulid_output["sigma_end"],
+            attn_mask=pulid_output["mask"]
+        )
+
         emptylatentimage = EmptyLatentImage()
         emptylatentimage_37 = emptylatentimage.generate(
             width=512, height=896, batch_size=1
@@ -174,74 +188,6 @@ def main():
         saveimage.save_images(
             filename_prefix="result", images=get_value_at_index(vaedecode_38, 0)
         )
-
-
-
-def _main():
-    
-    import_custom_nodes()
-    with torch.inference_mode():
-        loader = UNETLoader()
-        model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors", weight_dtype="default")
-        vaeload = VAELoader().load_vae("ae.sft")
-
-        
-        redux_output = torch.load("redux_cond_2025-03-26 18:35.pt")
-        if False:
-            dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
-            dualcliploader_34 = dualcliploader.load_clip(
-                clip_name1="clip_l.safetensors", clip_name2="t5xxl_fp16.safetensors", type="flux",
-            )
-            encode = CLIPTextEncode().encode(
-                clip=get_value_at_index(dualcliploader_34, 0),
-                text="This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures actor Hugh Jackman in a close-up portrait. Jackman, with his neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. "
-            )
-        
-        ksamplerselect_35 = KSamplerSelect().get_sampler(sampler_name="euler")
-
-        emptylatentimage = EmptyLatentImage()
-        emptylatentimage_37 = emptylatentimage.generate(
-            width=512, height=896, batch_size=1
-        )
-
-       
-        randomnoise_13 = (Noise_RandomNoise(random.randint(1, 2**64)),)
-
-        fluxguidance_16 = FluxGuidance().append(
-            guidance=3.5, conditioning=redux_output
-        )
-
-        basicguider_17 = BasicGuider().get_guider(
-            model=get_value_at_index(model, 0),
-            conditioning=get_value_at_index(fluxguidance_16, 0),
-        )
-
-        basicscheduler_36 = BasicScheduler().get_sigmas(
-            scheduler="simple",
-            steps=28,
-            denoise=1,
-            model=get_value_at_index(model, 0),
-        )
-
-        samplercustomadvanced_10 = SamplerCustomAdvanced().sample(
-            noise=get_value_at_index(randomnoise_13, 0),
-            guider=get_value_at_index(basicguider_17, 0),
-            sampler=get_value_at_index(ksamplerselect_35, 0),
-            sigmas=get_value_at_index(basicscheduler_36, 0),
-            latent_image=get_value_at_index(emptylatentimage_37, 0),
-        )
-        vaedecode = VAEDecode()
-        vaedecode_38 = vaedecode.decode(
-            samples=get_value_at_index(samplercustomadvanced_10, 0),
-            vae=get_value_at_index(vaeload, 0),
-        )
-
-        saveimage = SaveImage()
-
-        saveimage.save_images(
-            filename_prefix="result", images=get_value_at_index(vaedecode_38, 0)
-        )
-
 
 if __name__ == "__main__":
     main()
