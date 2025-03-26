@@ -125,7 +125,7 @@ def import_custom_nodes() -> None:
 
 def main():
     import_custom_nodes()
-    if True:
+    if False:
         loader = CheckpointLoaderSimple()
         model = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
         vae_model = VAELoader().load_vae("ae.sft")
@@ -145,7 +145,7 @@ def main():
         ])
     with torch.inference_mode():
 
-        if True:
+        if False:
             emptylatentimage = EmptyLatentImage()
             emptylatentimage_37 = emptylatentimage.generate(
                 width=512, height=896, batch_size=1
@@ -182,7 +182,8 @@ def main():
         else:
             positive = textencode.encode(
                 clip=get_value_at_index(dualcliploader_34, 0),
-                text="This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures actor Hugh Jackman in a close-up portrait. Jackman, with his neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. "
+                text="1 man"
+                #text="This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures actor Hugh Jackman in a close-up portrait. Jackman, with his neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. "
             )
             negative = textencode.encode(
                 clip=get_value_at_index(dualcliploader_34, 0),
