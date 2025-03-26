@@ -163,7 +163,6 @@ def main():
     torch.save(positive, "/home/featurize/work/pulid-redux-comfyui-deploy/postive.pt")
     torch.save(negative, "/home/featurize/work/pulid-redux-comfyui-deploy/negative.pt")
 
-
 def _main():
     
     import_custom_nodes()
