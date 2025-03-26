@@ -125,7 +125,7 @@ def import_custom_nodes() -> None:
 
 def main():
     import_custom_nodes()
-    if False:
+    if True:
         loader = CheckpointLoaderSimple()
         model = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
         vae_model = VAELoader().load_vae("ae.sft")
@@ -145,7 +145,7 @@ def main():
         ])
     with torch.inference_mode():
 
-        if False:
+        if True:
             emptylatentimage = EmptyLatentImage()
             emptylatentimage_37 = emptylatentimage.generate(
                 width=512, height=896, batch_size=1
