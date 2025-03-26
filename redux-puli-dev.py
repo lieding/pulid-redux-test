@@ -130,7 +130,7 @@ def main():
     # vae_model = VAELoader().load_vae("ae.sft")
     dualcliploader = DualCLIPLoader()
     dualcliploader_34 = dualcliploader.load_clip(
-        clip_name1="t5xxl_fp16.safetensors", clip_name2="clip_l.safetensors", type="flux",
+        clip_name1="t5xxl_fp16.safetensors", clip_name2="ViT-L-14-BEST-smooth-GmP-TE-only-HF-format.safetensors", type="flux",
     )
     textencode = CLIPTextEncode()
     

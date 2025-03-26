@@ -16,7 +16,7 @@ Pillow
 scipy
 tqdm
 psutil
-python-opencv
+opencv-python
 kornia>=0.7.1
 spandrel
 soundfile
