@@ -21,8 +21,9 @@ if args.base_directory:
 else:
     base_path = os.path.dirname(os.path.realpath(__file__))
 
-with open("extra_model_paths.yaml", "r") as file:
-    base_path = yaml.safe_load(os.path.dirname(os.path.realpath(__file__)) + "/" + file)['comfyui']['base_path']
+config_path = os.path.dirname(os.path.realpath(__file__)) + "/extra_model_paths.yaml"
+with open(config_path, "r") as file:
+    base_path = yaml.safe_load(file)['comfyui']['base_path']
 
 models_dir = os.path.join(base_path, "models")
 folder_names_and_paths["checkpoints"] = ([os.path.join(models_dir, "checkpoints")], supported_pt_extensions)
