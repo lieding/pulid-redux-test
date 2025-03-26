@@ -4,6 +4,7 @@ import sys
 from typing import Sequence, Mapping, Any, Union
 import torch
 from comfy import model_management
+from comfy.model_patcher import ModelPatcher
 from extra_config import load_extra_path_config as _load_extra_path_config
 from nodes import NODE_CLASS_MAPPINGS, CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage, VAELoader, UNETLoader, KSampler, DualCLIPLoader
 from comfy_extras.nodes_custom_sampler import BasicGuider, BasicScheduler, KSamplerSelect, Noise_RandomNoise, SamplerCustomAdvanced
@@ -132,6 +133,18 @@ def import_custom_nodes() -> None:
     # Initializing custom nodes
     init_extra_nodes()
 
+def load_pulid_model(pulid_file: str):
+    # Also initialize the model, takes longer to load but then it doesn't have to be done every time you change parameters in the apply node
+    offload_device = model_management.unet_offload_device()
+    load_device = model_management.get_torch_device()
+
+    model = PulidFluxModel()
+    model.from_pretrained(path=pulid_file)
+
+    model_patcher = ModelPatcher(model, load_device=load_device, offload_device=offload_device)
+    del model
+
+    return (model_patcher,)
 
 
 def main():
@@ -143,13 +156,12 @@ def main():
     model_management.load_models_gpu([
         loader[0].patcher if hasattr(loader[0], 'patcher') else loader[0] for loader in model_loaders
     ])
-    pulid_model = PulidFluxModel()
-    pulid_model.from_pretrained("pulid_flux_v0.9.1.safetensors")
+    pulid_model = load_pulid_model("pulid_flux_v0.9.1.safetensors")
     with torch.inference_mode():
         pulid_output = torch.load("pulid_outout_2025-03-26 21:53.pt")
         model = apply_pulid_flux(
             model=get_value_at_index(model, 0),
-            pulid_flux=pulid_model,
+            pulid_flux=get_value_at_index(pulid_model, 0),
             cond=pulid_output["embedding"],
             weight=pulid_output["weight"],
             start_at=pulid_output["sigma_start"],
