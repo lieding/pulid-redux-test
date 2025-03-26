@@ -145,7 +145,7 @@ def main():
         scheduler="simple",
         positive=get_value_at_index(positive, 0),
         negative=get_value_at_index(negative, 0),
-        latent_image=get_value_at_index(emptylatentimage_37),
+        latent_image=get_value_at_index(emptylatentimage_37, 0),
         denoise=1
     )
 
