@@ -94,6 +94,16 @@ def add_extra_model_paths() -> None:
     else:
         print("Could not find the extra_model_paths config file.")
 
+def zero_cond(conditioning):
+    c = []
+    for t in conditioning:
+        d = t[1].copy()
+        pooled_output = d.get("pooled_output", None)
+        if pooled_output is not None:
+            d["pooled_output"] = torch.zeros_like(pooled_output)
+        n = [torch.zeros_like(t[0]), d]
+        c.append(n)
+    return (c, )
 
 add_comfyui_directory_to_sys_path()
 add_extra_model_paths()
@@ -125,86 +135,58 @@ def import_custom_nodes() -> None:
 
 def main():
     import_custom_nodes()
-    if True:
-        loader = CheckpointLoaderSimple()
-        model = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
-        vae_model = VAELoader().load_vae("ae.sft")
-        model_loaders = [model, vae_model]
-        model_management.load_models_gpu([
-            loader[0].patcher if hasattr(loader[0], 'patcher') else loader[0] for loader in model_loaders
-        ])
-    else:
-        dualcliploader = DualCLIPLoader()
-        dualcliploader_34 = dualcliploader.load_clip(
-            clip_name1="t5xxl_fp8_e4m3fn.safetensors", clip_name2="ViT-L-14-BEST-smooth-GmP-TE-only-HF-format.safetensors", type="flux",
-        )
-        textencode = CLIPTextEncode()
-        model_loaders = [dualcliploader_34]
-        model_management.load_models_gpu([
-            loader[0].patcher if hasattr(loader[0], 'patcher') else loader[0] for loader in model_loaders
-        ])
+    loader = CheckpointLoaderSimple()
+    model = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
+    vae_model = VAELoader().load_vae("ae.sft")
+    model_loaders = [model, vae_model]
+    model_management.load_models_gpu([
+        loader[0].patcher if hasattr(loader[0], 'patcher') else loader[0] for loader in model_loaders
+    ])
     with torch.inference_mode():
+        emptylatentimage = EmptyLatentImage()
+        emptylatentimage_37 = emptylatentimage.generate(
+            width=512, height=896, batch_size=1
+        )
 
-        if True:
-            emptylatentimage = EmptyLatentImage()
-            emptylatentimage_37 = emptylatentimage.generate(
-                width=512, height=896, batch_size=1
-            )
+        redux_output = torch.load("redux_cond_2025-03-26 18:35.pt")
 
-            positive = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/positive.pt")
-            negative = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/negative.pt")
+        ksampler = KSampler().sample(
+            model=get_value_at_index(model, 0),
+            seed=random.randint(1, 2**64),
+            steps=20,
+            cfg=1,
+            sampler_name="euler_ancestral",
+            scheduler="normal",
+            positive=redux_output,
+            negative=get_value_at_index(zero_cond(redux_output), 0),
+            latent_image=get_value_at_index(emptylatentimage_37, 0),
+            denoise=1
+        )
 
-            ksampler = KSampler().sample(
-                model=get_value_at_index(model, 0),
-                seed=random.randint(1, 2**64),
-                steps=20,
-                cfg=3,
-                sampler_name="euler",
-                scheduler="simple",
-                positive=get_value_at_index(positive, 0),
-                negative=get_value_at_index(negative, 0),
-                latent_image=get_value_at_index(emptylatentimage_37, 0),
-                denoise=1
-            )
+        vaedecode = VAEDecode()
+        vaedecode_38 = vaedecode.decode(
+            samples=get_value_at_index(ksampler, 0),
+            vae=get_value_at_index(vae_model, 0),
+        )
 
-            vaedecode = VAEDecode()
-            vaedecode_38 = vaedecode.decode(
-                samples=get_value_at_index(ksampler, 0),
-                vae=get_value_at_index(vae_model, 0),
-            )
+        saveimage = SaveImage()
 
-            saveimage = SaveImage()
+        saveimage.save_images(
+            filename_prefix="result", images=get_value_at_index(vaedecode_38, 0)
+        )
 
-            saveimage.save_images(
-                filename_prefix="result", images=get_value_at_index(vaedecode_38, 0)
-            )
-
-        else:
-            positive = textencode.encode(
-                clip=get_value_at_index(dualcliploader_34, 0),
-                text="1 man"
-                #text="This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures actor Hugh Jackman in a close-up portrait. Jackman, with his neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. "
-            )
-            negative = textencode.encode(
-                clip=get_value_at_index(dualcliploader_34, 0),
-                text=""
-            )
-
-            torch.save(positive, "/home/featurize/work/pulid-redux-comfyui-deploy/positive.pt")
-            torch.save(negative, "/home/featurize/work/pulid-redux-comfyui-deploy/negative.pt")
 
 
 def _main():
     
     import_custom_nodes()
     with torch.inference_mode():
-        loader = UNETLoader() # CheckpointLoaderSimple()
-        #model = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
-        model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors", weight_dtype="fp8_e4m3fn")
+        loader = UNETLoader()
+        model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors", weight_dtype="default")
         vaeload = VAELoader().load_vae("ae.sft")
 
         
-        redux_output = torch.load("female_1_redux_prompt.pt")
+        redux_output = torch.load("redux_cond_2025-03-26 18:35.pt")
         if False:
             dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
             dualcliploader_34 = dualcliploader.load_clip(
