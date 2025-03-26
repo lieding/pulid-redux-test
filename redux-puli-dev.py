@@ -7,7 +7,7 @@ from comfy import model_management
 from comfy.model_patcher import ModelPatcher
 from extra_config import load_extra_path_config as _load_extra_path_config
 from nodes import NODE_CLASS_MAPPINGS, CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage, VAELoader, UNETLoader, KSampler, DualCLIPLoader
-from comfy_extras.nodes_custom_sampler import BasicGuider, BasicScheduler, KSamplerSelect, Noise_RandomNoise, SamplerCustomAdvanced
+from comfy_extras.nodes_custom_sampler import BasicGuider, BasicScheduler, KSamplerSelect, Noise_RandomNoise, SamplerCustomAdvanced, RandomNoise
 from comfy_extras.nodes_flux import FluxGuidance
 import node_helpers
 from apply_pulid import PulidFluxModel, apply_pulid_flux
@@ -176,22 +176,33 @@ def main():
 
         redux_output = torch.load("redux_cond_2025-03-26 18:35.pt")
 
-        ksampler = KSampler().sample(
+        fluxguidance_16 = FluxGuidance().append(
+            guidance=3.5, conditioning=redux_output
+        )
+
+        basicguider_17 = BasicGuider().get_guider(
             model=get_value_at_index(model, 0),
-            seed=random.randint(1, 2**64),
-            steps=20,
-            cfg=1,
-            sampler_name="euler_ancestral",
+            conditioning=get_value_at_index(fluxguidance_16, 0),
+        )
+
+        basicscheduler_36 = BasicScheduler().get_sigmas(
             scheduler="normal",
-            positive=redux_output,
-            negative=get_value_at_index(zero_cond(redux_output), 0),
+            steps=28,
+            denoise=1,
+            model=get_value_at_index(model, 0),
+        )
+
+        samplercustomadvanced_10 = SamplerCustomAdvanced().sample(
+            noise=get_value_at_index(RandomNoise().get_noise(noise_seed=random.randint(1, 2**64)), 0),
+            guider=get_value_at_index(basicguider_17, 0),
+            sampler=get_value_at_index(KSamplerSelect().get_sampler(sampler_name="euler_ancestral"), 0),
+            sigmas=get_value_at_index(basicscheduler_36, 0),
             latent_image=get_value_at_index(emptylatentimage_37, 0),
-            denoise=1
         )
 
         vaedecode = VAEDecode()
         vaedecode_38 = vaedecode.decode(
-            samples=get_value_at_index(ksampler, 0),
+            samples=get_value_at_index(samplercustomadvanced_10, 0),
             vae=get_value_at_index(vae_model, 0),
         )
 
