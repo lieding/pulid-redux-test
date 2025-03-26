@@ -123,43 +123,44 @@ def import_custom_nodes() -> None:
 
 
 def main():
-    loader = UNETLoader()
-    model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors", weight_dtype="fp8_e4m3fn_fast")
-    vaeload = VAELoader().load_vae("ae.sft")
+    with torch.inference_mode():
+        loader = UNETLoader()
+        model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors", weight_dtype="fp8_e4m3fn_fast")
+        vaeload = VAELoader().load_vae("ae.sft")
 
-    emptylatentimage = EmptyLatentImage()
-    emptylatentimage_37 = emptylatentimage.generate(
-        width=512, height=896, batch_size=1
-    )
+        emptylatentimage = EmptyLatentImage()
+        emptylatentimage_37 = emptylatentimage.generate(
+            width=512, height=896, batch_size=1
+        )
 
-    positive = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/positive.pt")
-    negative = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/negative.pt")
+        positive = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/positive.pt")
+        negative = torch.load("/home/featurize/work/pulid-redux-comfyui-deploy/negative.pt")
 
 
-    ksampler = KSampler().sample(
-        model=get_value_at_index(model, 0),
-        seed=random.randint(1, 2**64),
-        steps=28,
-        cfg=3.5,
-        sampler_name="euler",
-        scheduler="simple",
-        positive=get_value_at_index(positive, 0),
-        negative=get_value_at_index(negative, 0),
-        latent_image=get_value_at_index(emptylatentimage_37, 0),
-        denoise=1
-    )
+        ksampler = KSampler().sample(
+            model=get_value_at_index(model, 0),
+            seed=random.randint(1, 2**64),
+            steps=28,
+            cfg=3.5,
+            sampler_name="euler",
+            scheduler="simple",
+            positive=get_value_at_index(positive, 0),
+            negative=get_value_at_index(negative, 0),
+            latent_image=get_value_at_index(emptylatentimage_37, 0),
+            denoise=1
+        )
 
-    vaedecode = VAEDecode()
-    vaedecode_38 = vaedecode.decode(
-        samples=get_value_at_index(ksampler, 0),
-        vae=get_value_at_index(vaeload, 0),
-    )
+        vaedecode = VAEDecode()
+        vaedecode_38 = vaedecode.decode(
+            samples=get_value_at_index(ksampler, 0),
+            vae=get_value_at_index(vaeload, 0),
+        )
 
-    saveimage = SaveImage()
+        saveimage = SaveImage()
 
-    saveimage.save_images(
-        filename_prefix="result", images=get_value_at_index(vaedecode_38, 0)
-    )
+        saveimage.save_images(
+            filename_prefix="result", images=get_value_at_index(vaedecode_38, 0)
+        )
 
 
 def _main():
