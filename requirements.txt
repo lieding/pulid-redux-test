@@ -16,6 +16,11 @@ Pillow
 scipy
 tqdm
 psutil
+python-opencv
+kornia>=0.7.1
+spandrel
+soundfile
+av
 # For PuLID
 #facexlib
 #insightface
