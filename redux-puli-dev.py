@@ -125,7 +125,7 @@ def import_custom_nodes() -> None:
 
 def main():
     import_custom_nodes()
-    if True:
+    if False:
         loader = CheckpointLoaderSimple()
         model = loader.load_checkpoint(ckpt_name="flux1-dev-fp8.safetensors")
         vae_model = VAELoader().load_vae("ae.sft")
@@ -136,7 +136,7 @@ def main():
     else:
         dualcliploader = DualCLIPLoader()
         dualcliploader_34 = dualcliploader.load_clip(
-            clip_name1="t5xxl_fp16.safetensors", clip_name2="ViT-L-14-BEST-smooth-GmP-TE-only-HF-format.safetensors", type="flux",
+            clip_name1="t5xxl_fp8_e4m3fn.safetensors", clip_name2="ViT-L-14-BEST-smooth-GmP-TE-only-HF-format.safetensors", type="flux",
         )
         textencode = CLIPTextEncode()
         model_loaders = [dualcliploader_34]
@@ -145,7 +145,7 @@ def main():
         ])
     with torch.inference_mode():
 
-        if True:
+        if False:
             emptylatentimage = EmptyLatentImage()
             emptylatentimage_37 = emptylatentimage.generate(
                 width=512, height=896, batch_size=1
@@ -157,10 +157,10 @@ def main():
             ksampler = KSampler().sample(
                 model=get_value_at_index(model, 0),
                 seed=random.randint(1, 2**64),
-                steps=28,
-                cfg=3.5,
-                sampler_name="dpmpp_sde",
-                scheduler="karras",
+                steps=20,
+                cfg=3,
+                sampler_name="euler",
+                scheduler="simple",
                 positive=get_value_at_index(positive, 0),
                 negative=get_value_at_index(negative, 0),
                 latent_image=get_value_at_index(emptylatentimage_37, 0),
