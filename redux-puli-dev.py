@@ -5,7 +5,7 @@ from typing import Sequence, Mapping, Any, Union
 import torch
 from comfy import model_management
 from extra_config import load_extra_path_config as _load_extra_path_config
-from nodes import NODE_CLASS_MAPPINGS, CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage, VAELoader, UNETLoader
+from nodes import NODE_CLASS_MAPPINGS, CheckpointLoaderSimple, LoadImage, CLIPTextEncode, EmptyLatentImage, VAEDecode, SaveImage, VAELoader, UNETLoader, KSampler
 from comfy_extras.nodes_custom_sampler import BasicGuider, BasicScheduler, KSamplerSelect, Noise_RandomNoise, SamplerCustomAdvanced
 from comfy_extras.nodes_flux import FluxGuidance
 import node_helpers
@@ -121,7 +121,50 @@ def import_custom_nodes() -> None:
     # Initializing custom nodes
     init_extra_nodes()
 
+
+# def main():
+#     loader = UNETLoader()
+#     model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors", weight_dtype="fp8_e4m3fn")
+
+#     emptylatentimage = EmptyLatentImage()
+#     emptylatentimage_37 = emptylatentimage.generate(
+#         width=512, height=896, batch_size=1
+#     )
+
+
+#     KSampler().sample(
+#         model=get_value_at_index(model, 0),
+#         seed=random.randint(1, 2**64),
+#         steps=28,
+#         cfg=3.5,
+#         sampler_name="euler",
+#         scheduler="simple",
+#         #positive=,
+#         #negative=,
+#         latent_image=get_value_at_index(emptylatentimage_37),
+#         denoise=1
+#     )
+
 def main():
+
+    dualcliploader = NODE_CLASS_MAPPINGS["DualCLIPLoader"]()
+    dualcliploader_34 = dualcliploader.load_clip(
+        clip_name1="clip_l.safetensors", clip_name2="t5xxl_fp16.safetensors", type="flux",
+    )
+    positive = CLIPTextEncode().encode(
+        clip=get_value_at_index(dualcliploader_34, 0),
+        text="This black-and-white photograph, likely taken with a high-resolution DSLR camera using a medium aperture (f/5.6), captures actor Hugh Jackman in a close-up portrait. Jackman, with his neatly combed, short hair, and a slight smile, wears a formal suit and tie. The lighting is dramatic, with a spotlight creating a halo effect around his face, casting shadows that highlight his facial features. The background is dark, emphasizing the subject. "
+    )
+
+    negative = CLIPTextEncode().encode(
+        clip=get_value_at_index(dualcliploader_34, 0),
+        text=""
+    )
+    torch.save(positive, "/home/featurize/work/pulid-redux-comfyui-deploy/postive.pt")
+    torch.save(negative, "/home/featurize/work/pulid-redux-comfyui-deploy/negative.pt")
+
+
+def _main():
     
     import_custom_nodes()
     with torch.inference_mode():
