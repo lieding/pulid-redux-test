@@ -187,7 +187,7 @@ def main():
 
         basicscheduler_36 = BasicScheduler().get_sigmas(
             scheduler="normal",
-            steps=28,
+            steps=16,
             denoise=1,
             model=get_value_at_index(model, 0),
         )
