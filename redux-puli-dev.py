@@ -150,8 +150,8 @@ def load_pulid_model(pulid_file: str):
 def main():
     # import_custom_nodes()
     loader = UNETLoader()
-    model = loader.load_unet(unet_name="flux1-dev-fp8.safetensors", weight_dtype="default")
-    vae_model = VAELoader().load_vae("ae.sft")
+    model = loader.load_unet(unet_name="shuttle-jaguar-fp8.safetensors", weight_dtype="default")
+    vae_model = VAELoader().load_vae("ae.safetensors")
     model_loaders = [model, vae_model]
     model_management.load_models_gpu([
         loader[0].patcher if hasattr(loader[0], 'patcher') else loader[0] for loader in model_loaders
