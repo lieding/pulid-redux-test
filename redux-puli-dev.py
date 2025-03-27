@@ -195,7 +195,7 @@ def main():
         samplercustomadvanced_10 = SamplerCustomAdvanced().sample(
             noise=get_value_at_index(RandomNoise().get_noise(noise_seed=random.randint(1, 2**64)), 0),
             guider=get_value_at_index(basicguider_17, 0),
-            sampler=get_value_at_index(KSamplerSelect().get_sampler(sampler_name="euler_ancestral"), 0),
+            sampler=get_value_at_index(KSamplerSelect().get_sampler(sampler_name="euler"), 0),
             sigmas=get_value_at_index(basicscheduler_36, 0),
             latent_image=get_value_at_index(emptylatentimage_37, 0),
         )

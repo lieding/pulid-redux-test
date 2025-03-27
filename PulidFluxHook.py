@@ -113,7 +113,7 @@ class DitDoubleBlockReplace:
         for i, callback in enumerate(self.callback):
             if self.kwargs[i]["sigma_start"] >= sigma >= self.kwargs[i]["sigma_end"]:
                 img = img + callback(temp_img,
-                                     pulid_model=self.kwargs[i]['pulid_ca'],
+                                     pulid_ca=self.kwargs[i]['pulid_ca'],
                                      ca_idx=self.kwargs[i]['ca_idx'],
                                      weight=self.kwargs[i]['weight'],
                                      embedding=self.kwargs[i]['embedding'],
@@ -161,7 +161,7 @@ class DitSingleBlockReplace:
         for i, callback in enumerate(self.callback):
             if self.kwargs[i]["sigma_start"] >= sigma >= self.kwargs[i]["sigma_end"]:
                 real_img = real_img + callback(temp_img,
-                                               pulid_model=self.kwargs[i]['pulid_ca'],
+                                               pulid_ca=self.kwargs[i]['pulid_ca'],
                                                ca_idx=self.kwargs[i]['ca_idx'],
                                                weight=self.kwargs[i]['weight'],
                                                embedding=self.kwargs[i]['embedding'],
