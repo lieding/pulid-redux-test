@@ -177,7 +177,7 @@ def main():
         redux_output = torch.load("redux_cond_2025-03-26 18:35.pt")
 
         fluxguidance_16 = FluxGuidance().append(
-            guidance=3.5, conditioning=redux_output
+            guidance=3.5, conditioning=get_value_at_index(zero_cond(redux_output), 0)
         )
 
         basicguider_17 = BasicGuider().get_guider(
