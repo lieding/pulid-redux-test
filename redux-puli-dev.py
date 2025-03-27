@@ -152,7 +152,12 @@ def main():
     loader = UNETLoader()
     model = loader.load_unet(unet_name="shuttle-jaguar-fp8.safetensors", weight_dtype="default")
     vae_model = VAELoader().load_vae("ae.safetensors")
-    model_loaders = [model, vae_model]
+    dualclipload = DualCLIPLoader().load_clip(
+        clip_name1="t5xxl_fp16.safetensors",
+        clip_name2="ViT-L-14-BEST-smooth-GmP-TE-only-HF-format.safetensors",
+        type="flux"
+    )
+    model_loaders = [model, vae_model, dualclipload]
     model_management.load_models_gpu([
         loader[0].patcher if hasattr(loader[0], 'patcher') else loader[0] for loader in model_loaders
     ])
@@ -177,7 +182,10 @@ def main():
         redux_output = torch.load("redux_cond_2025-03-26 18:35.pt")
 
         fluxguidance_16 = FluxGuidance().append(
-            guidance=3.5, conditioning=get_value_at_index(zero_cond(redux_output), 0)
+            guidance=3.5, conditioning=get_value_at_index(CLIPTextEncode().encode(
+                clip=get_value_at_index(dualclipload, 0),
+                text="1lady"
+            ), 0)
         )
 
         basicguider_17 = BasicGuider().get_guider(
