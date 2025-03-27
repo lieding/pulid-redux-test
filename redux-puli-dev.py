@@ -164,13 +164,13 @@ def main():
     pulid_model = load_pulid_model("pulid_flux_v0.9.1.safetensors")
     with torch.inference_mode():
         pulid_output = torch.load("pulid_outout_2025-03-26 21:53.pt")
-        model = apply_pulid_flux(
+        new_model = apply_pulid_flux(
             model=get_value_at_index(model, 0),
             pulid_flux=get_value_at_index(pulid_model, 0),
             cond=pulid_output["embedding"],
             weight=pulid_output["weight"],
-            start_at=pulid_output["sigma_start"],
-            end_at=pulid_output["sigma_end"],
+            start_at=0,
+            end_at=1,
             attn_mask=pulid_output["mask"]
         )
 
@@ -189,7 +189,7 @@ def main():
         )
 
         basicguider_17 = BasicGuider().get_guider(
-            model=get_value_at_index(model, 0),
+            model=get_value_at_index(new_model, 0),
             conditioning=get_value_at_index(fluxguidance_16, 0),
         )
 
@@ -197,7 +197,7 @@ def main():
             scheduler="normal",
             steps=16,
             denoise=1,
-            model=get_value_at_index(model, 0),
+            model=get_value_at_index(new_model, 0),
         )
 
         samplercustomadvanced_10 = SamplerCustomAdvanced().sample(
